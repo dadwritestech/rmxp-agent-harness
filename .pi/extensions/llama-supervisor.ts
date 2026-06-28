@@ -7,7 +7,9 @@
  * Gating is by the active model's baseUrl, so using the LAN/cloud provider never
  * spawns a 24GB local server.
  *
- * Override via env: LLAMA_BIN, LLAMA_MODEL, LLAMA_PORT, LLAMA_ARGS (extra args).
+ * Configure via env: LLAMA_MODEL (required, path to the .gguf), LLAMA_BIN
+ * (llama-server, defaults to PATH), LLAMA_PORT, LLAMA_ARGS (extra args). With no
+ * LLAMA_MODEL set, auto-start is disabled and you run the server yourself.
  */
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { spawn } from "node:child_process";
@@ -17,9 +19,8 @@ import { join } from "node:path";
 const PORT = process.env.LLAMA_PORT || "8080";
 const HOST = "127.0.0.1";
 const BASE = `http://${HOST}:${PORT}`;
-const BIN = process.env.LLAMA_BIN || "D:\\ik_llama.cpp\\build\\bin\\Release\\llama-server.exe";
-const MODEL = process.env.LLAMA_MODEL ||
-  "E:\\LM-Studio\\unsloth\\Qwen3.6-27B-UD-Q6_K_XL\\Qwen3.6-27B-UD-Q6_K_XL.gguf";
+const BIN = process.env.LLAMA_BIN || "llama-server";   // override if not on PATH
+const MODEL = process.env.LLAMA_MODEL || "";           // required to enable auto-start
 const ARGS = [
   "-m", MODEL,
   "-ngl", "99", "-sm", "layer", "-ts", "16,16", "-fa", "on", "-c", "16384",
@@ -53,6 +54,10 @@ export default function llamaSupervisor(pi: ExtensionAPI) {
     if (ensuring) return ensuring;
     ensuring = (async () => {
       if (await isUp()) return;                         // reuse whatever is serving
+      if (!MODEL) {                                     // no model configured -> do not spawn
+        ctx.ui.notify(`No server at ${BASE}. Set LLAMA_MODEL to enable auto-start, or start it yourself.`, "error");
+        return;
+      }
       ctx.ui.notify(`Starting local model server on ${BASE} (model load ~45s)...`, "info");
       const log = openSync(join(ctx.cwd, "out", "llama-supervised.log"), "a");
       const child = spawn(BIN, ARGS, { stdio: ["ignore", log, log], windowsHide: true });

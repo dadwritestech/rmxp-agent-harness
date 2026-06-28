@@ -29,7 +29,7 @@ const EXT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(EXT_DIR, "..", "..");            // D:/Harness
 const CODEC_CLI = join(ROOT, "codec", "cli.rb");
 const RENDER_PY = join(ROOT, "renderer", "render.py");
-const RUBY = process.env.RMXP_RUBY || "C:\\Ruby33-x64\\bin\\ruby.exe";
+const RUBY = process.env.RMXP_RUBY || "ruby";       // override if not on PATH
 const PYTHON = process.env.RMXP_PYTHON || "python";
 
 export default function rmxp(pi: ExtensionAPI) {

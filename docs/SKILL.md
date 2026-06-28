@@ -7,7 +7,7 @@ the discovery surface: what the tools are and how to drive them.
 
 ## Setup
 
-- Ruby 3.3+ (`RMXP_RUBY` env overrides the path; default `C:\Ruby33-x64\bin\ruby.exe`).
+- Ruby 3.3+ on PATH (`RMXP_RUBY` overrides the interpreter path).
 - Python 3 with Pillow (`RMXP_PYTHON`, default `python`).
 - The Pi extension auto-loads from `.pi/extensions/rmxp.ts`.
 - A map's data dir must contain `Tilesets.rxdata` and `MapInfos.rxdata` beside it,
