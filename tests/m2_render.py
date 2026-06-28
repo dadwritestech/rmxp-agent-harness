@@ -5,12 +5,13 @@ Visual fidelity is judged by eye (handover M2 acceptance). This guard catches
 regressions cheaply: every referenced tile resolves (missing == 0) and the
 canvas is exactly width*32 x height*32. Renders go to out/ (gitignored)."""
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUBY = r"C:\Ruby33-x64\bin\ruby.exe"
+RUBY = os.environ.get("RMXP_RUBY", "ruby")
 sys.path.insert(0, str(ROOT / "renderer"))
 import render as R  # noqa: E402
 

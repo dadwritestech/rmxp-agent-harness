@@ -5,12 +5,13 @@ the frozen schema/map_ir.schema.json, and the schema's structural invariants
 
 Runs the Ruby codec to produce IR, then validates with jsonschema."""
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUBY = r"C:\Ruby33-x64\bin\ruby.exe"
+RUBY = os.environ.get("RMXP_RUBY", "ruby")
 SCHEMA = json.loads((ROOT / "schema" / "map_ir.schema.json").read_text())
 
 import jsonschema
