@@ -1,0 +1,20 @@
+{
+  "_comment": "Proposed CLI-Anything registry.json entry for the RMXP harness. Third-party (source_url non-null). Fill the <...> placeholders before opening a PR against HKUDS/CLI-Anything registry.json (append to the top-level `clis` array).",
+  "name": "rmxp",
+  "display_name": "RPG Maker XP",
+  "version": "0.1.0",
+  "description": "Edit RPG Maker XP maps through persisted .rxdata: byte-exact codec, deterministic validators, advisory render.",
+  "requires": "Ruby >=3.3; Python >=3.10 with Pillow",
+  "homepage": "<your-project-homepage>",
+  "source_url": "<your-public-repo-url>",
+  "install_cmd": "pip install cli-anything-rmxp",
+  "entry_point": "cli-anything-rmxp",
+  "skill_md": "docs/SKILL.md",
+  "category": "game-development",
+  "contributors": [
+    {
+      "name": "<your-name>",
+      "url": "<your-github-profile-url>"
+    }
+  ]
+}
