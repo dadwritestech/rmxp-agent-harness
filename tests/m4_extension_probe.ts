@@ -24,16 +24,16 @@ export default function probe(_realPi: any) {
       const root = process.cwd();
       const dir = join(root, "out", "scratch", "m4");
       mkdirSync(dir, { recursive: true });
-      for (const f of ["Tilesets.rxdata", "MapInfos.rxdata", "Map007.rxdata"])
-        copyFileSync(join(root, "corpus", f), join(dir, f === "Map007.rxdata" ? "Map007.rxdata" : f));
-      cpSync(join(root, "corpus", "Graphics"), join(dir, "Graphics"), { recursive: true });
+      for (const f of ["Tilesets.rxdata", "MapInfos.rxdata", "Map001.rxdata"])
+        copyFileSync(join(root, "sample", f), join(dir, f));
+      cpSync(join(root, "sample", "Graphics"), join(dir, "Graphics"), { recursive: true });
 
       const tools: Record<string, any> = {};
       rmxpFactory({ exec: sh, registerTool: (t: any) => (tools[t.name] = t), registerCommand: () => {}, on: () => {}, setActiveTools: () => {} });
       out.tools = Object.keys(tools).sort();
 
       const ctx = { cwd: root };
-      const map = "out/scratch/m4/Map007.rxdata";
+      const map = "out/scratch/m4/Map001.rxdata";
 
       const snap = JSON.parse((await tools.rmxp_snapshot.execute("1", { map }, undefined, undefined, ctx)).content[0].text);
       out.steps.snapshot = { events: snap.event_count, dims: snap.dimensions };

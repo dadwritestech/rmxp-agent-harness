@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.expand_path('../codec', __dir__)
 require 'codec'
 require 'validators'
 
-DATA = File.expand_path('../corpus', __dir__)
+DATA = File.expand_path('../sample', __dir__)
 TILESETS  = Marshal.load(File.binread(File.join(DATA, 'Tilesets.rxdata')))
 VALID_IDS = Marshal.load(File.binread(File.join(DATA, 'MapInfos.rxdata'))).keys
 DIMS = {}
@@ -23,7 +23,7 @@ end
 fails = []
 
 # ---- Part A: known-good ----
-%w[Map001 Map003 Map007 Map013].each do |name|
+%w[Map001 Map002].each do |name|
   id  = name[/\d+/].to_i
   rep = validate(Marshal.load(File.binread(File.join(DATA, "#{name}.rxdata"))), id)
   errs = rep['issues'].select { |i| i['severity'] == 'ERROR' }
@@ -35,8 +35,8 @@ fails = []
   end
 end
 
-# ---- Part B: deliberately broken (deep copy of Map007, then sabotage) ----
-broken = Marshal.load(Marshal.dump(Marshal.load(File.binread(File.join(DATA, 'Map007.rxdata')))))
+# ---- Part B: deliberately broken (deep copy of Map001, then sabotage) ----
+broken = Marshal.load(Marshal.dump(Marshal.load(File.binread(File.join(DATA, 'Map001.rxdata')))))
 broken.instance_variable_get(:@data).data[0] = 99_999          # TILE_RANGE
 broken.instance_variable_set(:@width, broken.instance_variable_get(:@width) + 3)  # TABLE_DIMS
 first_ev = broken.instance_variable_get(:@events).values.first

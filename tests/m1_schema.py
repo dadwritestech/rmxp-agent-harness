@@ -16,7 +16,7 @@ SCHEMA = json.loads((ROOT / "schema" / "map_ir.schema.json").read_text())
 import jsonschema
 validator = jsonschema.Draft202012Validator(SCHEMA)
 
-maps = sorted((ROOT / "corpus").glob("Map[0-9][0-9][0-9].rxdata"))
+maps = sorted((ROOT / "sample").glob("Map[0-9][0-9][0-9].rxdata"))
 if not maps:
     sys.exit("no corpus maps found")
 

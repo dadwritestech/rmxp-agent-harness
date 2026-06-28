@@ -1,9 +1,15 @@
+# copyrighted game data (not redistributed) and private design notes
+corpus/
+HANDOVER.md
+
 # transient corpora / scratch
 .allmaps/
 *.tmp
 # rendered output (M2+)
 out/
 *.png
+# ...but the synthetic sample tileset is original and shipped
+!sample/**/*.png
 
 # python bytecode
 __pycache__/

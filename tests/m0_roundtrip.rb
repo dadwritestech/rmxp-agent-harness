@@ -6,7 +6,7 @@ $LOAD_PATH.unshift File.expand_path('../codec', __dir__)
 require 'codec'
 require 'json'
 
-MAPS = Dir[File.expand_path('../corpus/Map[0-9][0-9][0-9].rxdata', __dir__)].sort
+MAPS = Dir[File.expand_path('../sample/Map[0-9][0-9][0-9].rxdata', __dir__)].sort
 abort "no corpus maps found" if MAPS.empty?
 
 def tile_equal?(a, b)

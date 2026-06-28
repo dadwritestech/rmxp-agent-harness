@@ -20,16 +20,16 @@ OUT.mkdir(exist_ok=True)
 # tileset metadata once
 ts_json = OUT / "tilesets.json"
 ts_json.write_bytes(subprocess.run(
-    [RUBY, str(ROOT / "codec" / "cli.rb"), "dump-tilesets", str(ROOT / "corpus" / "Tilesets.rxdata")],
+    [RUBY, str(ROOT / "codec" / "cli.rb"), "dump-tilesets", str(ROOT / "sample" / "Tilesets.rxdata")],
     capture_output=True, check=True).stdout)
 tilesets = json.loads(ts_json.read_text())
 
 ok = True
-for m in sorted((ROOT / "corpus").glob("Map[0-9][0-9][0-9].rxdata")):
+for m in sorted((ROOT / "sample").glob("Map[0-9][0-9][0-9].rxdata")):
     ir = json.loads(subprocess.run(
         [RUBY, str(ROOT / "codec" / "cli.rb"), "to-ir", str(m)],
         capture_output=True, check=True).stdout)
-    placed, size = R.render(ir, tilesets, str(ROOT / "corpus" / "Graphics"),
+    placed, size = R.render(ir, tilesets, str(ROOT / "sample" / "Graphics"),
                             str(OUT / f"{m.stem}.png"))
     exp = (ir["tiles"]["xsize"] * 32, ir["tiles"]["ysize"] * 32)
     problems = []
