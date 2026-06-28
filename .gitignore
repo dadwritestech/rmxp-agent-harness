@@ -20,3 +20,6 @@ __pycache__/
 
 # server logs
 *.log
+
+# local-only working drafts
+upstream/issue-draft.md

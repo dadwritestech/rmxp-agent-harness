@@ -15,12 +15,16 @@ serving edits or headless renders. This is a third harness mode their taxonomy
 does not yet cover: a persisted-format lift with no editing API. See
 [../docs/writeup.md](../docs/writeup.md) for the full argument.
 
-There is also a direct hook: issue
-[#179 "add Pi Coding Agent extension support"](https://github.com/HKUDS/CLI-Anything/issues/179).
-This harness already ships a working Pi extension
+CONTRIBUTING.md supports standalone-repo harnesses directly: host the CLI in your
+own repository and submit a registry-only PR whose entry sets `source_url` to the
+repo and `skill_md` to the raw URL of `docs/SKILL.md`. No code is required inside
+their monorepo. The plan here follows that path: introduce the harness via an
+issue first (their stated norm), then open the registry-only PR.
+
+This harness also ships a working Pi extension
 ([../.pi/extensions/rmxp.ts](../.pi/extensions/rmxp.ts)) plus a supervisor that
-manages the local model-server lifecycle. That is a concrete answer to #179 and a
-natural entry point for the contribution.
+manages the local model-server lifecycle, which is relevant given their recent
+work on Pi Coding Agent support.
 
 ## Surface mapping (their contract -> this harness)
 
