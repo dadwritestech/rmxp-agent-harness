@@ -4,3 +4,7 @@
 # rendered output (M2+)
 out/
 *.png
+
+# python bytecode
+__pycache__/
+*.pyc

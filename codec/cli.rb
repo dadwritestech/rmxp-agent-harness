@@ -16,7 +16,23 @@ when 'to-rxdata'
   ir = JSON.parse(File.read(ARGV[1]))
   File.binwrite(ARGV[2], Marshal.dump(Codec.ir_to_map(ir)))
   warn "wrote #{ARGV[2]}"
+when 'dump-tilesets'
+  # Export the bits of Tilesets.rxdata the renderer needs, keyed by tileset id.
+  arr = Marshal.load(File.binread(ARGV[1]))
+  out = {}
+  arr.each_with_index do |t, i|
+    next if t.nil?
+    g = ->(s) { t.instance_variable_get(s) }
+    out[i.to_s] = {
+      'id'             => g.call(:@id),
+      'name'           => g.call(:@name),
+      'tileset_name'   => g.call(:@tileset_name),
+      'autotile_names' => g.call(:@autotile_names),
+      'panorama_name'  => g.call(:@panorama_name)
+    }
+  end
+  STDOUT.write(JSON.pretty_generate(out))
 else
-  warn "usage: cli.rb to-ir <map.rxdata> | to-rxdata <ir.json> <out.rxdata>"
+  warn "usage: cli.rb to-ir <map.rxdata> | to-rxdata <ir.json> <out.rxdata> | dump-tilesets <Tilesets.rxdata>"
   exit 2
 end
