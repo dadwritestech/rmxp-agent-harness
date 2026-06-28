@@ -11,3 +11,6 @@ __pycache__/
 
 # full project extraction (scratch)
 .project/
+
+# server logs
+*.log
