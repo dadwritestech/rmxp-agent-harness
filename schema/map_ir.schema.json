@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rmxp-harness/schema/map_ir.schema.json",
+  "title": "RMXP Map IR v1",
+  "description": "Agent-facing intermediate representation of an RPG Maker XP RPG::Map. Mirrors the RPG::Map structure. Editable fields are first-class; non-editable structure is carried as opaque base64 Marshal blobs. Fidelity machinery (ivar_order, string encoding) is preserved so the codec round-trips byte-exactly.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ir_version", "klass", "ivar_order", "tileset_id", "width", "height", "encounter_step", "tiles", "events", "opaque"],
+  "properties": {
+    "ir_version": { "const": 1 },
+    "klass": { "const": "RPG::Map" },
+    "ivar_order": {
+      "description": "RPG::Map instance-variable names in original Marshal assignment order; replayed on rebuild for byte-exact re-dump.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^@[a-z_]+$" }
+    },
+    "tileset_id": { "type": "integer", "minimum": 0 },
+    "width": { "type": "integer", "minimum": 1 },
+    "height": { "type": "integer", "minimum": 1 },
+    "encounter_step": { "type": "integer", "minimum": 0 },
+    "tiles": { "$ref": "#/$defs/table" },
+    "events": {
+      "type": "object",
+      "description": "Map of RMXP event hash-key (stringified integer) to event.",
+      "propertyNames": { "pattern": "^-?[0-9]+$" },
+      "additionalProperties": { "$ref": "#/$defs/event" }
+    },
+    "opaque": {
+      "type": "object",
+      "description": "Map ivars carried verbatim as base64(Marshal.dump(value)); not edited in v1.",
+      "propertyNames": { "pattern": "^@[a-z_]+$" },
+      "additionalProperties": { "$ref": "#/$defs/blob" }
+    }
+  },
+  "$defs": {
+    "blob": {
+      "type": "string",
+      "description": "strict base64 of a Marshal byte string",
+      "contentEncoding": "base64"
+    },
+    "str": {
+      "description": "RGSS byte string preserving its original encoding tag.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["s", "enc"],
+          "properties": {
+            "s":   { "type": "string", "description": "readable text (valid-UTF-8 bytes)" },
+            "enc": { "type": "string", "description": "original Ruby encoding name to force on rebuild" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["b64", "enc"],
+          "properties": {
+            "b64": { "type": "string", "contentEncoding": "base64", "description": "raw bytes when not valid UTF-8" },
+            "enc": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "table": {
+      "type": "object",
+      "description": "RMXP Table: 3-layer tile grid. data length must equal size (== xsize*ysize*zsize for layer 3 maps).",
+      "additionalProperties": false,
+      "required": ["dim", "xsize", "ysize", "zsize", "size", "data"],
+      "properties": {
+        "dim":   { "type": "integer", "enum": [1, 2, 3] },
+        "xsize": { "type": "integer", "minimum": 0 },
+        "ysize": { "type": "integer", "minimum": 0 },
+        "zsize": { "type": "integer", "minimum": 0 },
+        "size":  { "type": "integer", "minimum": 0 },
+        "data":  { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 65535 } }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "x", "y", "pages_blob", "ivar_order"],
+      "properties": {
+        "id":   { "type": "integer" },
+        "name": { "$ref": "#/$defs/str" },
+        "x":    { "type": "integer", "minimum": 0 },
+        "y":    { "type": "integer", "minimum": 0 },
+        "pages_blob": { "$ref": "#/$defs/blob" },
+        "ivar_order": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^@[a-z_]+$" }
+        }
+      }
+    }
+  }
+}
