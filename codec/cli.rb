@@ -5,6 +5,7 @@
 #
 # to-ir is byte-faithful round-trippable: to-rxdata(to-ir(x)) == x on the corpus.
 require_relative 'codec'
+require_relative 'validators'
 require 'json'
 
 cmd = ARGV[0]
@@ -32,7 +33,31 @@ when 'dump-tilesets'
     }
   end
   STDOUT.write(JSON.pretty_generate(out))
+when 'validate'
+  # validate <data_dir> <Mapxxx.rxdata>
+  data_dir, map_path = ARGV[1], ARGV[2]
+  tilesets = Marshal.load(File.binread(File.join(data_dir, 'Tilesets.rxdata')))
+  map = Marshal.load(File.binread(map_path))
+  map_id = File.basename(map_path)[/Map0*(\d+)\.rxdata/, 1].to_i
+
+  # MapInfos is the authoritative registry of existing map ids (warp existence)
+  valid_ids = Marshal.load(File.binread(File.join(data_dir, 'MapInfos.rxdata'))).keys
+
+  # build map_id -> [w,h] from whatever map files are on disk (warp bounds)
+  dims = {}
+  Dir[File.join(data_dir, 'Map[0-9]*.rxdata')].each do |p|
+    id = File.basename(p)[/Map0*(\d+)\.rxdata/, 1].to_i
+    m  = Marshal.load(File.binread(p))
+    dims[id] = [m.instance_variable_get(:@width), m.instance_variable_get(:@height)]
+  end
+
+  tileset = tilesets[map.instance_variable_get(:@tileset_id)]
+  report  = Validators.validate(map, tileset, map_id: map_id,
+                                valid_map_ids: valid_ids, map_dims: dims)
+  STDOUT.write(JSON.pretty_generate(report))
+  exit(report['ok'] ? 0 : 1)
 else
-  warn "usage: cli.rb to-ir <map.rxdata> | to-rxdata <ir.json> <out.rxdata> | dump-tilesets <Tilesets.rxdata>"
+  warn "usage: cli.rb to-ir <map.rxdata> | to-rxdata <ir.json> <out.rxdata> | " \
+       "dump-tilesets <Tilesets.rxdata> | validate <data_dir> <map.rxdata>"
   exit 2
 end
