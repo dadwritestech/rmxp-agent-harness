@@ -1,0 +1,2 @@
+# rxdata is Ruby Marshal binary -- never touch line endings or it corrupts
+*.rxdata binary

@@ -1,0 +1,6 @@
+# transient corpora / scratch
+.allmaps/
+*.tmp
+# rendered output (M2+)
+out/
+*.png
