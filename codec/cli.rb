@@ -6,6 +6,7 @@
 # to-ir is byte-faithful round-trippable: to-rxdata(to-ir(x)) == x on the corpus.
 require_relative 'codec'
 require_relative 'validators'
+require_relative 'pbs'
 require_relative 'ops'
 require 'json'
 
@@ -53,8 +54,15 @@ when 'validate'
   end
 
   tileset = tilesets[map.instance_variable_get(:@tileset_id)]
+  pbs_dir = File.join(data_dir, 'PBS')
+  pbs     = Dir.exist?(pbs_dir) ? PBS.load(pbs_dir) : nil
   report  = Validators.validate(map, tileset, map_id: map_id,
-                                valid_map_ids: valid_ids, map_dims: dims)
+                                valid_map_ids: valid_ids, map_dims: dims, pbs: pbs)
+  STDOUT.write(JSON.pretty_generate(report))
+  exit(report['ok'] ? 0 : 1)
+when 'validate-pbs'
+  # validate-pbs <pbs_dir>  -- map-independent PBS internal-integrity report
+  report = Validators.validate_pbs(PBS.load(ARGV[1]))
   STDOUT.write(JSON.pretty_generate(report))
   exit(report['ok'] ? 0 : 1)
 when 'snapshot'
@@ -112,6 +120,7 @@ else
   warn "usage: cli.rb <cmd> ...\n" \
        "  to-ir <map.rxdata> | to-rxdata <ir.json> <out.rxdata>\n" \
        "  dump-tilesets <Tilesets.rxdata> | validate <data_dir> <map.rxdata>\n" \
+       "  validate-pbs <pbs_dir>\n" \
        "  snapshot <map.rxdata> [Tilesets.rxdata] | read <map.rxdata> region <x> <y> <w> <h> <layer>\n" \
        "  act <map.rxdata> <op.json> <out.rxdata>"
   exit 2
