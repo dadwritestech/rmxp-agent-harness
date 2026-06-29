@@ -15,9 +15,12 @@ Dir[File.join(DATA, 'Map[0-9]*.rxdata')].each do |p|
   DIMS[id] = [m.instance_variable_get(:@width), m.instance_variable_get(:@height)]
 end
 
+PBS_DIR = File.join(DATA, 'PBS')
+PBS_DATA = Dir.exist?(PBS_DIR) ? PBS.load(PBS_DIR) : nil
+
 def validate(map, id)
   ts = TILESETS[map.instance_variable_get(:@tileset_id)]
-  Validators.validate(map, ts, map_id: id, valid_map_ids: VALID_IDS, map_dims: DIMS)
+  Validators.validate(map, ts, map_id: id, valid_map_ids: VALID_IDS, map_dims: DIMS, pbs: PBS_DATA)
 end
 
 fails = []
@@ -64,6 +67,41 @@ if missing.empty? && extra_unexpected.empty? && rep['ok'] == false
 else
   fails << "broken map: missing=#{missing} unexpected=#{extra_unexpected} ok=#{rep['ok']}"
   puts "B broken-map  [FAIL] got #{got.inspect} missing #{missing.inspect}"
+end
+
+# ---- Part C: encounter cross-ref ----
+# C1: map 1 has a clean synthetic encounter table -> no ENCOUNTER_* errors.
+rep_c1 = validate(Marshal.load(File.binread(File.join(DATA, 'Map001.rxdata'))), 1)
+enc_errs = rep_c1['issues'].select { |i| i['code'].to_s.start_with?('ENCOUNTER') }
+if enc_errs.empty?
+  puts 'C1 map1 encounters  [PASS] clean'
+else
+  fails << "map1 encounters should be clean but raised #{enc_errs.map { |e| e['code'] }}"
+  puts "C1 map1 encounters  [FAIL] #{enc_errs.map { |e| e['code'] }}"
+end
+
+# C2: sabotage the loaded encounter table for map 1 and re-validate.
+if PBS_DATA
+  saboteur = Marshal.load(Marshal.dump(PBS_DATA))
+  saboteur[:encounters][1] = [
+    { type: 'Land', step_chance: 21, slots: [
+      { prob: 100, species: 'GHOSTMON', min: 3, max: 6 },   # ENCOUNTER_SPECIES_MISSING
+      { prob: 50,  species: 'FOOMON',   min: 9, max: 2 }    # ENCOUNTER_LEVEL_RANGE (min>max)
+    ] },
+    { type: 'Moonlight', step_chance: nil, slots: [] }       # ENCOUNTER_TYPE_UNKNOWN
+  ]
+  ts = TILESETS[1]
+  map1 = Marshal.load(File.binread(File.join(DATA, 'Map001.rxdata')))
+  rep_c2 = Validators.validate(map1, ts, map_id: 1, valid_map_ids: VALID_IDS, map_dims: DIMS, pbs: saboteur)
+  got_c2  = rep_c2['issues'].map { |i| i['code'] }.uniq
+  want_c2 = %w[ENCOUNTER_SPECIES_MISSING ENCOUNTER_LEVEL_RANGE ENCOUNTER_TYPE_UNKNOWN]
+  missing_c2 = want_c2 - got_c2
+  if missing_c2.empty?
+    puts "C2 broken encounters  [PASS] flagged #{(got_c2 & want_c2).sort.inspect}"
+  else
+    fails << "broken encounters missing=#{missing_c2}"
+    puts "C2 broken encounters  [FAIL] missing #{missing_c2.inspect}"
+  end
 end
 
 puts "\nM3 #{fails.empty? ? 'PASS -- clean maps clean, broken map flagged with correct codes.' : 'FAIL'}"
