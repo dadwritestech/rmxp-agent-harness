@@ -104,14 +104,32 @@ export default function rmxp(pi: ExtensionAPI) {
     label: "RMXP validate",
     description:
       "Run deterministic validators on a map (tile-range, table dims, event bounds, " +
-      "warp integrity vs MapInfos, reachability). Returns a JSON report; ERROR issues " +
-      "mean the map is broken. Always validate after acting.",
+      "warp integrity vs MapInfos, reachability, and wild-encounter cross-ref vs PBS " +
+      "when a PBS/ dir sits beside the map). Returns a JSON report; ERROR issues mean " +
+      "the map is broken. Always validate after acting.",
     promptSnippet: "Validate an RMXP map (tiles, warps, reachability)",
     parameters: Type.Object({ map: Type.String() }),
     async execute(_id, p, signal, _u, ctx) {
       const r = resolveMap(ctx, p.map);
       // validate exits nonzero on ERROR; capture either way and return the report
       const res = await spawn(RUBY, [CODEC_CLI, "validate", r.dataDir, r.map], { cwd: r.dataDir, signal });
+      return text(res.stdout || res.stderr);
+    },
+  });
+
+  // ---- validate PBS (V, data layer) ----
+  pi.registerTool({
+    name: "rmxp_validate_pbs",
+    label: "RMXP validate PBS",
+    description:
+      "Check Pokemon Essentials PBS data for internal integrity: species referencing " +
+      "unknown moves/abilities/types/evolutions, and type relations referencing unknown " +
+      "types. Map-independent. Returns a JSON report; ERROR issues mean the data is broken.",
+    promptSnippet: "Validate Essentials PBS data integrity (species/moves/types)",
+    parameters: Type.Object({ pbs_dir: Type.String({ description: "path to a PBS/ directory" }) }),
+    async execute(_id, p, signal, _u, ctx) {
+      const dir = resolve(ctx.cwd, p.pbs_dir.replace(/^@/, ""));
+      const res = await spawn(RUBY, [CODEC_CLI, "validate-pbs", dir], { cwd: ctx.cwd, signal });
       return text(res.stdout || res.stderr);
     },
   });
@@ -187,6 +205,6 @@ export default function rmxp(pi: ExtensionAPI) {
   });
 
   pi.on("session_start", async (_e, ctx) => {
-    ctx.ui.notify("RMXP harness tools loaded: snapshot, read, validate, act, render", "info");
+    ctx.ui.notify("RMXP harness tools loaded: snapshot, read, validate, validate_pbs, act, render", "info");
   });
 }

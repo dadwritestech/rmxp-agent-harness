@@ -139,7 +139,7 @@ event, set a warp. The agent never handles the raw 7,740-element tile array; it
 asks for narrow edits. Inspection is a bounded snapshot (dimensions, tileset,
 per-layer fill stats, the event list with parsed warp targets) plus a region read,
 never the full arrays by default. Render is the advisory Pillow path described
-above. Verification is the validator suite plus the round-trip oracle. Discovery
+above. Verification is the validator suite plus the round-trip oracle. The suite now includes a per-map wild-encounter cross-ref against PBS data (folded into rmxp_validate when a PBS/ dir is present) and a map-independent PBS internal-integrity check (rmxp_validate_pbs), both deterministic and covered by tests/m3_pbs.rb and tests/m3_validate.rb. Discovery
 is a SKILL.md describing the verbs and the edit loop.
 
 One detail that matters for verification: warps in RMXP live inside event command

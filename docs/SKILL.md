@@ -20,7 +20,8 @@ the discovery surface: what the tools are and how to drive them.
 | `rmxp_snapshot {map}` | I | Bounded summary: dims, tileset, per-layer fill stats, events + parsed warps. Never dumps tile arrays. |
 | `rmxp_read {map,x,y,w,h,layer}` | I | Read a rectangle of tile ids from one layer. |
 | `rmxp_act {map,operation,...}` | C | Edit in place: `set_tile`, `fill_region`, `move_event`, `set_warp`. Bounds-checked. |
-| `rmxp_validate {map}` | V | Deterministic report: tile-range, table dims, event bounds, warp integrity, reachability. |
+| `rmxp_validate {map}` | V | Deterministic report: tile-range, table dims, event bounds, warp integrity, reachability, and wild-encounter cross-ref vs PBS (when `PBS/` is beside the map). |
+| `rmxp_validate_pbs {pbs_dir}` | V | PBS internal integrity: species->moves/abilities/types/evolutions and type relations all resolve. Map-independent. |
 | `rmxp_render {map}` | R | Render to PNG and return the image. Advisory only — validators are truth. |
 
 ## Loop
@@ -49,6 +50,7 @@ ruby codec/cli.rb snapshot  <map.rxdata> [Tilesets.rxdata]
 ruby codec/cli.rb read      <map.rxdata> region <x> <y> <w> <h> <layer>
 ruby codec/cli.rb act       <map.rxdata> <op.json> <out.rxdata>
 ruby codec/cli.rb validate  <data_dir>   <map.rxdata>
+ruby codec/cli.rb validate-pbs <pbs_dir>                  # PBS internal integrity
 ruby codec/cli.rb to-ir     <map.rxdata>            # full IR (schema/map_ir.schema.json)
 ruby codec/cli.rb to-rxdata <ir.json> <out.rxdata>
 ruby codec/cli.rb dump-tilesets <Tilesets.rxdata>
