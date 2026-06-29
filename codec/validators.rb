@@ -248,5 +248,6 @@ module Validators
 
   def err(code, detail, **extra)  { 'code' => code, 'severity' => 'ERROR', 'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
   def info(code, detail, **extra) { 'code' => code, 'severity' => 'INFO',  'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
+  # NOTE: intentionally shadows Kernel#warn inside this module; for a stderr line use Kernel.warn.
   def warn(code, detail, **extra) { 'code' => code, 'severity' => 'WARN',  'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
 end
