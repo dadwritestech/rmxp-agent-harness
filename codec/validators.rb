@@ -10,6 +10,7 @@
 # impassable. Reachability flood-fills 4-connected over non-wall cells.
 
 require_relative 'rgss'
+require_relative 'pbs'
 
 module Validators
   AUTOTILE_SIZE   = 48
@@ -44,7 +45,7 @@ module Validators
   # ---- main entry ----
   # valid_map_ids: authoritative set of map ids (from MapInfos) for warp existence.
   # map_dims: { map_id => [width, height] } for warp bounds (may be partial).
-  def validate(map, tileset, map_id:, valid_map_ids: nil, map_dims: {})
+  def validate(map, tileset, map_id:, valid_map_ids: nil, map_dims: {}, pbs: nil)
     issues = []
     w = map.instance_variable_get(:@width)
     h = map.instance_variable_get(:@height)
@@ -55,6 +56,7 @@ module Validators
     check_event_bounds(issues, map, w, h)
     check_warps(issues, map, map_id, w, h, valid_map_ids, map_dims)
     check_reachability(issues, map, tileset, w, h)
+    check_encounters(issues, map_id, pbs) if pbs
 
     {
       'map_id'   => map_id,
@@ -168,6 +170,83 @@ module Validators
     end
   end
 
+  # Cross-ref a map's wild-encounter table (from encounters.txt) against species
+  # existence and level sanity. No section for a map id = no wild Pokemon = skip.
+  def check_encounters(issues, map_id, pbs)
+    sections = pbs[:encounters][map_id]
+    return unless sections
+    species = pbs[:species]
+    sections.each do |sec|
+      unless PBS::ENCOUNTER_TYPES.include?(sec[:type])
+        issues << warn('ENCOUNTER_TYPE_UNKNOWN',
+                       "map #{map_id} uses unknown encounter type #{sec[:type]}",
+                       type: sec[:type])
+      end
+      sec[:slots].each do |slot|
+        unless species.key?(slot[:species])
+          issues << err('ENCOUNTER_SPECIES_MISSING',
+                        "map #{map_id} encounter references unknown species #{slot[:species]}",
+                        species: slot[:species], type: sec[:type])
+        end
+        lo, hi = slot[:min], slot[:max]
+        if lo > hi || lo < 1 || hi > PBS::MAX_LEVEL
+          issues << err('ENCOUNTER_LEVEL_RANGE',
+                        "map #{map_id} #{slot[:species]} level #{lo}-#{hi} outside 1..#{PBS::MAX_LEVEL}",
+                        species: slot[:species])
+        end
+      end
+    end
+  end
+
+  # Map-independent PBS internal-integrity check. Returns the same report shape
+  # as validate(), keyed by category counts instead of a map id.
+  def validate_pbs(pbs)
+    issues = []
+    species   = pbs[:species]
+    moves     = pbs[:moves]
+    abilities = pbs[:abilities]
+    types     = pbs[:types]
+
+    species.each do |id, s|
+      (s[:moves] + s[:tutor] + s[:egg]).uniq.each do |mv|
+        next if moves.key?(mv)
+        issues << err('PBS_MOVE_MISSING', "species #{id} references unknown move #{mv}", species: id, move: mv)
+      end
+      (s[:abilities] + s[:hidden]).uniq.each do |ab|
+        next if abilities.key?(ab)
+        issues << err('PBS_ABILITY_MISSING', "species #{id} references unknown ability #{ab}", species: id, ability: ab)
+      end
+      s[:types].each do |ty|
+        next if types.key?(ty)
+        issues << err('PBS_TYPE_MISSING', "species #{id} has unknown type #{ty}", species: id, type: ty)
+      end
+      s[:evolutions].each do |ev|
+        next if species.key?(ev)
+        issues << err('PBS_EVOLUTION_MISSING', "species #{id} evolves into unknown species #{ev}", species: id, target: ev)
+      end
+    end
+
+    moves.each do |id, m|
+      next if m[:type].nil? || types.key?(m[:type])
+      issues << err('PBS_TYPE_MISSING', "move #{id} has unknown type #{m[:type]}", move: id, type: m[:type])
+    end
+
+    types.each do |id, t|
+      (t[:weaknesses] + t[:resistances] + t[:immunities]).uniq.each do |r|
+        next if types.key?(r)
+        issues << warn('PBS_TYPE_RELATION_MISSING', "type #{id} references unknown type #{r}", type: id, ref: r)
+      end
+    end
+
+    {
+      'scope'  => 'pbs',
+      'ok'     => issues.none? { |i| i['severity'] == 'ERROR' },
+      'counts' => issues.group_by { |i| i['severity'] }.transform_values(&:size),
+      'issues' => issues
+    }
+  end
+
   def err(code, detail, **extra)  { 'code' => code, 'severity' => 'ERROR', 'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
   def info(code, detail, **extra) { 'code' => code, 'severity' => 'INFO',  'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
+  def warn(code, detail, **extra) { 'code' => code, 'severity' => 'WARN',  'detail' => detail }.merge(extra.transform_keys(&:to_s)) end
 end
