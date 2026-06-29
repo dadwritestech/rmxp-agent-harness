@@ -1,0 +1,18 @@
+# Synthetic moves.
+#-------------------------------
+[BONK]
+Name = Bonk
+Type = STONE
+Category = Physical
+Power = 40
+#-------------------------------
+[SCORCH]
+Name = Scorch
+Type = EMBER
+Category = Special
+Power = 50
+#-------------------------------
+[SPROUT]
+Name = Sprout
+Type = FLORA
+Category = Status

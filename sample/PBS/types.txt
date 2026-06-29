@@ -1,0 +1,12 @@
+# Synthetic types for the harness test fixture.
+#-------------------------------
+[FLORA]
+Name = Flora
+Weaknesses = EMBER
+#-------------------------------
+[EMBER]
+Name = Ember
+Resistances = FLORA
+#-------------------------------
+[STONE]
+Name = Stone

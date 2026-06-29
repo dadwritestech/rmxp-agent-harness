@@ -1,0 +1,17 @@
+# Synthetic species.
+#-------------------------------
+[FOOMON]
+Name = Foomon
+Types = FLORA
+Abilities = GUTSY
+Moves = 1,SPROUT,5,BONK
+TutorMoves = SCORCH
+Evolutions = BARMON,Level,16
+#-------------------------------
+[BARMON]
+Name = Barmon
+Types = FLORA,EMBER
+Abilities = GUTSY
+HiddenAbilities = STONESKIN
+Moves = 1,SPROUT,5,SCORCH
+EggMoves = BONK

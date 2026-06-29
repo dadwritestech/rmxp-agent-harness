@@ -1,0 +1,6 @@
+# Synthetic encounters keyed by map id.
+#-------------------------------
+[001] # Sample Town
+Land,21
+    60,FOOMON,3,6
+    40,BARMON,4,7

@@ -98,4 +98,88 @@ File.binwrite(File.join(OUT, 'Tilesets.rxdata'), Marshal.dump(build_tileset))
 File.binwrite(File.join(OUT, 'MapInfos.rxdata'), Marshal.dump(infos))
 File.binwrite(File.join(OUT, 'Map001.rxdata'), Marshal.dump(map1))
 File.binwrite(File.join(OUT, 'Map002.rxdata'), Marshal.dump(map2))
-puts "wrote sample fixture to #{OUT}: Tilesets, MapInfos, Map001 (10x8), Map002 (8x7)"
+# ---- synthetic PBS (original data; validators target Essentials v21.1 format) ----
+def write_pbs(out)
+  pbs = File.join(out, 'PBS')
+  FileUtils.mkdir_p(pbs)
+
+  File.write(File.join(pbs, 'types.txt'), <<~TXT)
+    # Synthetic types for the harness test fixture.
+    #-------------------------------
+    [FLORA]
+    Name = Flora
+    Weaknesses = EMBER
+    #-------------------------------
+    [EMBER]
+    Name = Ember
+    Resistances = FLORA
+    #-------------------------------
+    [STONE]
+    Name = Stone
+  TXT
+
+  File.write(File.join(pbs, 'abilities.txt'), <<~TXT)
+    # Synthetic abilities.
+    #-------------------------------
+    [GUTSY]
+    Name = Gutsy
+    Description = A spirited ability.
+    #-------------------------------
+    [STONESKIN]
+    Name = Stoneskin
+    Description = Tough as rock.
+  TXT
+
+  File.write(File.join(pbs, 'moves.txt'), <<~TXT)
+    # Synthetic moves.
+    #-------------------------------
+    [BONK]
+    Name = Bonk
+    Type = STONE
+    Category = Physical
+    Power = 40
+    #-------------------------------
+    [SCORCH]
+    Name = Scorch
+    Type = EMBER
+    Category = Special
+    Power = 50
+    #-------------------------------
+    [SPROUT]
+    Name = Sprout
+    Type = FLORA
+    Category = Status
+  TXT
+
+  File.write(File.join(pbs, 'pokemon.txt'), <<~TXT)
+    # Synthetic species.
+    #-------------------------------
+    [FOOMON]
+    Name = Foomon
+    Types = FLORA
+    Abilities = GUTSY
+    Moves = 1,SPROUT,5,BONK
+    TutorMoves = SCORCH
+    Evolutions = BARMON,Level,16
+    #-------------------------------
+    [BARMON]
+    Name = Barmon
+    Types = FLORA,EMBER
+    Abilities = GUTSY
+    HiddenAbilities = STONESKIN
+    Moves = 1,SPROUT,5,SCORCH
+    EggMoves = BONK
+  TXT
+
+  # map 1 (Sample Town) gets a wild table; map 2 (interior) has none.
+  File.write(File.join(pbs, 'encounters.txt'), <<~TXT)
+    # Synthetic encounters keyed by map id.
+    #-------------------------------
+    [001] # Sample Town
+    Land,21
+        60,FOOMON,3,6
+        40,BARMON,4,7
+  TXT
+end
+write_pbs(OUT)
+puts "wrote sample fixture to #{OUT}: Tilesets, MapInfos, Map001 (10x8), Map002 (8x7), PBS/"

@@ -1,0 +1,9 @@
+# Synthetic abilities.
+#-------------------------------
+[GUTSY]
+Name = Gutsy
+Description = A spirited ability.
+#-------------------------------
+[STONESKIN]
+Name = Stoneskin
+Description = Tough as rock.
